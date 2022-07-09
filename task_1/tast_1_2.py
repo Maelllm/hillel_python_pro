@@ -8,7 +8,7 @@ def size(function):
         tracemalloc.start()
         start = tracemalloc.get_tracemalloc_memory()
         function(*args, **kwargs)
-        return f'You used {tracemalloc.get_tracemalloc_memory() - start} bytes' \
+        return f'You used {(tracemalloc.get_tracemalloc_memory() - start)/1024} Kbytes' \
                f' to evaluate {function.__name__} result {function(*args, **kwargs)}'
 
     return wrapper
