@@ -7,7 +7,7 @@ from http import HTTPStatus
 from currency_symbols import CurrencySymbols
 from pprint import pprint
 
-from task_3.utils import format_records
+from utils import format_records
 
 app = Flask(__name__)
 
@@ -41,22 +41,20 @@ def generate_students():
 @app.route("/bitcoin")
 def get_bitcoin_value():
     currency = request.args.get('currency', 'USD')
-    multiplier = request.args.get('count', 1.0)
+    multiplier = request.args.get('count', 1)
     if not multiplier.isdigit():
         multiplier = 1
 
-    multiplier = float(multiplier)
+    multiplier = int(multiplier)
 
-    url = 'https://bitpay.com/api/rates'
+    url = f'https://bitpay.com/api/rates/{currency}'
     result = requests.get(url, {})
     if result.status_code != HTTPStatus.OK:
         return Response('ERROR: Courses is not available now. Try again later', status=result.status_code)
 
     result = result.json()
-    for i in result:
-        if currency == i["code"]:
-            return f'{multiplier} {CurrencySymbols.get_symbol("BTC")} is worth {i["rate"] * multiplier} ' \
-                   f'{CurrencySymbols.get_symbol(currency)} '
+    return f'{multiplier} {CurrencySymbols.get_symbol("BTC")} is worth {result["rate"] * multiplier} ' \
+           f'{CurrencySymbols.get_symbol(currency)} '
 
 
 app.run(port=5002, debug=True)
