@@ -1,24 +1,46 @@
-from flask import Flask
-
-from utils import format_records
-from database_handler import execute_query
+from http import HTTPStatus
+from flask import Flask, jsonify
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 
+from database_handler import execute_query
+from utils import format_records
+
 app = Flask(__name__)
+
+
+@app.errorhandler(HTTPStatus.UNPROCESSABLE_ENTITY)
+@app.errorhandler(HTTPStatus.BAD_REQUEST)
+def error_handler(error):
+    headers = error.data.get('headers', None)
+    messages = error.data.get('message', ["Invalid request."])
+
+    if headers:
+        return jsonify(
+            {
+                "errors": messages
+            },
+            error.code,
+            headers
+        )
+    else:
+        return jsonify(
+            {
+                "errors": messages
+            },
+            error.code,
+        )
 
 
 @app.route("/order_price")
 @use_kwargs(
     {
-        "country": fields.Str(
-            missing="%"
-        )
+        "country": fields.Str(required=False)
     },
     location="query"
 )
-def order_price(country):
-    if country == "":
+def order_price(country=None):
+    if not country:
         country = "%"
     query = "SELECT BillingCountry, SUM(UnitPrice * Quantity) as Full_Price " \
             "FROM invoice_items INNER JOIN invoices i on i.InvoiceId = invoice_items.InvoiceId " \
@@ -32,14 +54,12 @@ def order_price(country):
 @app.route("/get_all_info_about_track")
 @use_kwargs(
     {
-        "trackid": fields.Str(
-            missing='"%"'
-        )
+        "trackid": fields.Str(required=False)
     },
     location="query"
 )
-def get_all_info_about_track(trackid):
-    if trackid == "":
+def get_all_info_about_track(trackid=None):
+    if not trackid:
         trackid = '"%"'
     query = "SELECT * FROM tracks LEFT JOIN playlist_track pt on tracks.TrackId = pt.TrackId " \
             "LEFT JOIN albums a on a.AlbumId = tracks.AlbumId " \
@@ -69,4 +89,5 @@ def time_all_tracks():
     return format_records(records)
 
 
-app.run(port=5002, debug=True)
+if __name__ == '__main__':
+    app.run(port=5002, debug=True)
