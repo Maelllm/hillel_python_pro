@@ -26,4 +26,5 @@ def stats_by_city():
     return format_records(records)
 
 
-app.run(port=5003, debug=True)
+if __name__ == '__main__':
+    app.run(port=5003, debug=True)
