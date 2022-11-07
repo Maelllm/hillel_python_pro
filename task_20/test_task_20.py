@@ -23,7 +23,7 @@ class TestFibo(unittest.TestCase):
         start = datetime.now()
         self.fibo(480)
         finish = datetime.now()
-        self.assertLessEqual(finish - start, timedelta(milliseconds=700))
+        self.assertLessEqual(finish - start, timedelta(milliseconds=900))
 
     def test_nonint(self):
         with self.assertRaises(ValueError):
